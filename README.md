@@ -3,6 +3,8 @@
 Scrape, embed, and semantically search the CVPR 2026 open-access proceedings.
 A small Flask UI on top renders the results with thumbnails.
 
+![Web UI screenshot](docs/screenshot.png)
+
 ```
 scraper.py     →  data/papers.db + data/thumbnails/
 fetch_model.py →  ~/.cache/huggingface/...        (one-time, optional)
