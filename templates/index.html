@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CVPR 2026 Paper Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --card: #fff;
+    --text: #1a1a1a;
+    --muted: #666;
+    --accent: #1976d2;
+    --border: #e2e5ea;
+    --score: #6c5ce7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  header {
+    background: linear-gradient(135deg, #1976d2 0%, #6c5ce7 100%);
+    color: white;
+    padding: 28px 24px;
+  }
+  header h1 { margin: 0; font-size: 1.6em; font-weight: 700; }
+  header .sub { opacity: 0.85; font-size: 0.9em; margin-top: 4px; }
+  .container { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .searchbar {
+    display: flex; gap: 8px;
+    background: var(--card);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin: -22px auto 24px;
+    max-width: 880px;
+    position: relative;
+  }
+  .searchbar input[type="text"] {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1em;
+    outline: none;
+  }
+  .searchbar input[type="text"]:focus { border-color: var(--accent); }
+  .searchbar input[type="number"] {
+    width: 70px;
+    padding: 12px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1em;
+    outline: none;
+  }
+  .searchbar button {
+    padding: 12px 22px;
+    background: var(--accent);
+    color: white;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+  }
+  .searchbar button:hover { background: #1565c0; }
+  .searchbar button:disabled { opacity: 0.6; cursor: progress; }
+  .meta {
+    color: var(--muted);
+    font-size: 0.88em;
+    margin-bottom: 12px;
+  }
+  .result {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-left: 3px solid var(--accent);
+  }
+  .result .thumb {
+    flex: 0 0 110px;
+    width: 110px;
+    height: 140px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    color: #aaa; font-size: 0.75em;
+  }
+  .result .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .result .body { flex: 1; min-width: 0; }
+  .result .title-row { display: flex; align-items: baseline; gap: 10px; }
+  .result .score {
+    color: var(--score);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 0.85em;
+    background: #f0eaff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .result h3 {
+    margin: 0;
+    font-size: 1.06em;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .result h3 a { color: var(--text); text-decoration: none; }
+  .result h3 a:hover { color: var(--accent); }
+  .result .authors { color: var(--muted); font-size: 0.88em; margin: 4px 0 8px; }
+  .result .abstract {
+    color: #333;
+    font-size: 0.92em;
+    max-height: 4.5em;
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.2s;
+  }
+  .result .abstract.open { max-height: 100em; }
+  .result .abstract.collapsed::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1.6em;
+    background: linear-gradient(transparent, white);
+  }
+  .result .links { margin-top: 10px; font-size: 0.85em; }
+  .result .links a {
+    color: var(--accent);
+    text-decoration: none;
+    margin-right: 12px;
+  }
+  .result .links a:hover { text-decoration: underline; }
+  .result .toggle {
+    background: none; border: 0; color: var(--accent);
+    cursor: pointer; font-size: 0.85em; padding: 4px 0;
+  }
+  .empty { color: var(--muted); text-align: center; padding: 40px; }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid #ccc; border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="padding-top:0;padding-bottom:0">
+    <h1>CVPR 2026 Paper Search</h1>
+    <div class="sub">Semantic search over the open-access proceedings.</div>
+  </div>
+</header>
+
+<div class="container">
+  <form class="searchbar" id="searchForm" onsubmit="return doSearch(event)">
+    <input type="text" id="q" name="q" placeholder="e.g. 3D gaussian splatting for dynamic scenes" autofocus>
+    <input type="number" id="k" name="k" value="20" min="1" max="100" title="top-k">
+    <button type="submit" id="btn">Search</button>
+  </form>
+
+  <div id="meta" class="meta"></div>
+  <div id="results"></div>
+</div>
+
+<script>
+function escapeHTML(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function snippet(text, n=380) {
+  text = (text || "").trim();
+  if (text.length <= n) return text;
+  return text.slice(0, n).replace(/\s+\S*$/, "") + "...";
+}
+
+async function doSearch(ev) {
+  ev.preventDefault();
+  const q = document.getElementById("q").value.trim();
+  const k = document.getElementById("k").value;
+  const btn = document.getElementById("btn");
+  const meta = document.getElementById("meta");
+  const results = document.getElementById("results");
+  if (!q) return false;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  meta.textContent = "Searching...";
+  results.innerHTML = "";
+
+  const t0 = performance.now();
+  try {
+    const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&k=${k}`);
+    const data = await r.json();
+    const dt = (performance.now() - t0).toFixed(0);
+    meta.textContent = `${data.results.length} result(s) for "${q}" — ${dt} ms`;
+    if (!data.results.length) {
+      results.innerHTML = '<div class="empty">No results.</div>';
+    } else {
+      results.innerHTML = data.results.map(renderResult).join("");
+    }
+  } catch (e) {
+    meta.textContent = "Error: " + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Search";
+  }
+  return false;
+}
+
+function renderResult(r) {
+  const thumb = r.thumbnail_path
+    ? `<img src="/thumbnails/${escapeHTML(r.virtual_id)}.png" loading="lazy" alt="">`
+    : '<span>no thumb</span>';
+  const titleHref = r.oa_html_url || (r.pdf_url || "#");
+  const vlink = r.virtual_id
+    ? `<a href="https://cvpr.thecvf.com/virtual/2026/poster/${escapeHTML(r.virtual_id)}" target="_blank">virtual page</a>`
+    : "";
+  const pdf = r.pdf_url
+    ? `<a href="${escapeHTML(r.pdf_url)}" target="_blank">pdf</a>` : "";
+  const oa = r.oa_html_url
+    ? `<a href="${escapeHTML(r.oa_html_url)}" target="_blank">openaccess</a>` : "";
+  const abs = escapeHTML(r.abstract || "");
+  return `
+    <div class="result">
+      <div class="thumb">${thumb}</div>
+      <div class="body">
+        <div class="title-row">
+          <span class="score">${r.score.toFixed(3)}</span>
+          <h3><a href="${escapeHTML(titleHref)}" target="_blank">${escapeHTML(r.title)}</a></h3>
+        </div>
+        <div class="authors">${escapeHTML(r.authors || "")}</div>
+        <div class="abstract collapsed" onclick="this.classList.toggle('open');this.classList.toggle('collapsed')">${abs}</div>
+        <div class="links">${pdf} ${oa} ${vlink}</div>
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Generated data (regeneratable from scraper.py + indexer.py)
+data/papers.db
+data/papers.db-journal
+data/papers.db-wal
+data/papers.db-shm
+data/thumbnails/
+data/pdfs/
+data/embeddings.npy
+data/embedding_ids.npy
+data/embedding_meta.txt
+
+# Logs
+*.log
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
